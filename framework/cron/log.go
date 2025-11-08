@@ -1,6 +1,7 @@
 package cron
 
 import (
+	"context"
 	"github.com/hawthorntrees/cronframework/framework/logger"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -30,4 +31,12 @@ func initLogger(level string) {
 		//zap.AddCallerSkip(1),
 		zap.AddStacktrace(zapcore.ErrorLevel),
 	)
+}
+func GetLogger(ctx context.Context) *zap.Logger {
+	traceID := ctx.Value("traceID")
+	if traceID != nil {
+		return taskLogger.With(zap.String("traceID", traceID.(string)))
+	} else {
+		return taskLogger.With(zap.String("traceID", "traceIDErr"))
+	}
 }

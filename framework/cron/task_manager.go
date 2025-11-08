@@ -173,9 +173,6 @@ func (m *TaskManager) addTaskToCron(task *model.Hawthorn_task) (cron.EntryID, er
 	return m.cron.AddFunc(task.CronExpr, job)
 }
 
-// 执行过程，最难的地方就是如何登记 任务执行表
-// 1. 我们纠结，任务成功了，要不要登记，我们纠结的是 记录太多，所以纠结，但是最为一个成熟的框架，必须登记
-// 所以我们还是 按照传统登记吧,成功失败都要登记，跳过就跳过了，里面不能panic，不捕获panic
 var (
 	stateFiled     = "failed"
 	stateSuccess   = "success"
