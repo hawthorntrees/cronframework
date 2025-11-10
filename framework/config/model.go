@@ -50,7 +50,7 @@ type DatabasesConfig struct {
 }
 
 type DatabaseConfig struct {
-	Group         string           `yaml:"group,omitempty"`
+	DBGroup       string           `yaml:"db_group,omitempty"`
 	DefaultConfig DBInstanceConfig `yaml:"default,omitempty"`
 	PrimaryConfig DBInstanceConfig `yaml:"primary,omitempty"`
 	StandbyConfig DBInstanceConfig `yaml:"standby,omitempty"`

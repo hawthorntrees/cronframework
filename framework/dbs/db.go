@@ -23,7 +23,7 @@ func Init(log *zap.Logger, cfg *config.Config) {
 	for name, dbcfg := range cfg.Databases.ListsConfig {
 		instance, msg := dbInit(name, dbcfg)
 		manager.DBNameMap[name] = instance
-		manager.DBGroupMap[dbcfg.Group] = append(manager.DBGroupMap[dbcfg.Group], instance)
+		manager.DBGroupMap[dbcfg.DBGroup] = append(manager.DBGroupMap[dbcfg.DBGroup], instance)
 		log.Debug(msg)
 	}
 	if cfg.Databases.DatabaseHealthMonitorInterval > 0 {
