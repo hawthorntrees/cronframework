@@ -23,7 +23,7 @@ func Init(log *zap.Logger, cfg *config.Config) {
 	for name, dbcfg := range cfg.Databases.ListsConfig {
 		instance, msg := dbInit(name, dbcfg)
 		manager.DBNameMap[name] = instance
-		manager.DBGroupMap[dbcfg.DBGroup] = append(manager.DBGroupMap[dbcfg.DBGroup], instance)
+		manager.DBClusterMap[dbcfg.Cluster] = append(manager.DBClusterMap[dbcfg.Cluster], instance)
 		log.Debug(msg)
 	}
 	if cfg.Databases.DatabaseHealthMonitorInterval > 0 {
@@ -37,7 +37,7 @@ func dbInit(name string, cfg *config.DatabaseConfig) (*DBInstance, string) {
 		PrimaryDB:      dbConnectInfo{},
 		StandbyDB:      dbConnectInfo{},
 		CurrentDB:      nil,
-		Group:          "",
+		Cluster:        "",
 		IsUsingStandby: false,
 	}
 	priDB, err := initDBConnection(&cfg.PrimaryConfig)
