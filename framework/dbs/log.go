@@ -39,7 +39,6 @@ func initLogger(lel string) {
 	default:
 		level.SetLevel(zapcore.InvalidLevel)
 	}
-	// 我们需要创建一个
 	lg := zap.New(core,
 		zap.AddCaller(),
 		zap.IncreaseLevel(level),
@@ -112,7 +111,6 @@ func (l *loggerAdapter) Trace(ctx context.Context, begin time.Time, fc func() (s
 			log = l.logger.With(zap.String("traceID", id))
 		}
 	}
-	// 记录SQL执行日志
 	sql, rows := fc()
 	elapsed := time.Since(begin)
 

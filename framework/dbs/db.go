@@ -72,7 +72,6 @@ func dbInit(name string, cfg *config.DatabaseConfig) (*DBInstance, string) {
 	return instance, logmsg
 }
 
-// 没有log，但是数据库初始化时，要传入gorm的logger，所以，gorm的日志初始化，放在logger里面还是放在dbs里面呢？纠结啊
 func initDBConnection(instance *config.DBInstanceConfig) (*gorm.DB, error) {
 	decryptedPwd, err := utils.SM4Decrypt([]byte(instance.SM4Key), instance.Password)
 	if err != nil {
