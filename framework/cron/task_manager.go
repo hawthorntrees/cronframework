@@ -200,9 +200,11 @@ func (m *TaskManager) executeTask(task *model.Hawthorn_task) {
 	defer func() {
 		err := recover()
 		if err != nil {
+			lg.Sugar().Errorw("未知异常:%v", err)
 			execution.Error = fmt.Sprintf("未知异常：%v", err)
 			execution.Status = stateFiled
 		} else if finalErr != nil {
+			lg.Sugar().Errorw("任务失败:%v", finalErr)
 			execution.Error = fmt.Sprintf("任务失败：%v", finalErr)
 			execution.Status = stateFiled
 		} else if execution.Status == "" {

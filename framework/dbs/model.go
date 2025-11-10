@@ -70,14 +70,13 @@ func GetDBByGroup(group DBGroupEnum) (dbInfo []dBInfo) {
 	}
 	ret := make([]dBInfo, len(instances))
 
-	for _, df := range instances {
-
-		ret = append(ret, dBInfo{
+	for i, df := range instances {
+		ret[i] = dBInfo{
 			Center: df.CurrentDB.Center,
 			ID:     df.CurrentDB.Id,
 			DB:     df.CurrentDB.DB.Session(&gorm.Session{}),
 			Group:  df.Group,
-		})
+		}
 	}
 	return ret
 }
