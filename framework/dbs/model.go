@@ -57,10 +57,10 @@ func GetDBByName(name DBNameEnum) (db *gorm.DB) {
 }
 
 type dBInfo struct {
+	Cluster string
 	Center  string
 	ID      string
 	DB      *gorm.DB
-	Cluster string
 }
 
 func GetDBByCluster(cluster DBClusterEnum) (dbInfo []dBInfo) {
@@ -72,10 +72,10 @@ func GetDBByCluster(cluster DBClusterEnum) (dbInfo []dBInfo) {
 
 	for i, df := range instances {
 		ret[i] = dBInfo{
+			Cluster: df.Cluster,
 			Center:  df.CurrentDB.Center,
 			ID:      df.CurrentDB.Id,
 			DB:      df.CurrentDB.DB.Session(&gorm.Session{}),
-			Cluster: df.Cluster,
 		}
 	}
 	return ret

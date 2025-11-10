@@ -37,7 +37,7 @@ func dbInit(name string, cfg *config.DatabaseConfig) (*DBInstance, string) {
 		PrimaryDB:      dbConnectInfo{},
 		StandbyDB:      dbConnectInfo{},
 		CurrentDB:      nil,
-		Cluster:        "",
+		Cluster:        cfg.Cluster,
 		IsUsingStandby: false,
 	}
 	priDB, err := initDBConnection(&cfg.PrimaryConfig)
