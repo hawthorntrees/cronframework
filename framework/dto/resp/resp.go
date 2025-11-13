@@ -18,10 +18,12 @@ func Error(ginContext *gin.Context, message ...string) {
 	if len(message) > 0 {
 		msg = strings.Join(message, ",")
 	}
+	traceID := GetTraceIDFromContext(ginContext)
 	respData := RespData{
 		Code:    "100000",
 		Data:    nil,
 		Message: msg,
+		TraceId: traceID,
 	}
 	ginContext.JSON(200, respData)
 }
@@ -31,10 +33,13 @@ func Success(ginContext *gin.Context, data interface{}, message ...string) {
 	if len(message) > 0 {
 		msg = strings.Join(message, ",")
 	}
+	traceID := GetTraceIDFromContext(ginContext)
+
 	respData := RespData{
 		Code:    "000000",
 		Data:    data,
 		Message: msg,
+		TraceId: traceID,
 	}
 	ginContext.JSON(200, respData)
 }

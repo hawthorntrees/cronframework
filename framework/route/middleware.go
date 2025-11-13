@@ -9,7 +9,8 @@ import (
 
 func JwtAuth() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		if c.Request.URL.Path == "/api/login" {
+		_, ok := whitelist[c.Request.URL.Path]
+		if ok {
 			c.Next()
 			return
 		}

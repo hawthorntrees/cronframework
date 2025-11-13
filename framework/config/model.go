@@ -19,12 +19,14 @@ type AppConfig struct {
 }
 
 type ServerConfig struct {
-	Address      string        `yaml:"address,omitempty"`
-	ReadTimeout  time.Duration `yaml:"read_timeout,omitempty"`
-	WriteTimeout time.Duration `yaml:"write_timeout,omitempty"`
-	IdleTimeout  time.Duration `yaml:"idle_timeout,omitempty"`
-	DatabaseName string        `yaml:"database_name,omitempty"`
-	TokenKey     string        `yaml:"token_key,omitempty"`
+	BashPath       string        `yaml:"bash_path,omitempty"`
+	Address        string        `yaml:"address,omitempty"`
+	ReadTimeout    time.Duration `yaml:"read_timeout,omitempty"`
+	WriteTimeout   time.Duration `yaml:"write_timeout,omitempty"`
+	IdleTimeout    time.Duration `yaml:"idle_timeout,omitempty"`
+	DatabaseName   string        `yaml:"database_name,omitempty"`
+	TokenKey       string        `yaml:"token_key,omitempty"`
+	SessionExpires time.Duration `yaml:"session_expires"`
 }
 
 type TaskConfig struct {

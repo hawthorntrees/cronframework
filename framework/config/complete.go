@@ -9,6 +9,9 @@ func completeServer(c *Config) {
 	if c.Server.Address == "" {
 		c.Server.Address = ":8080"
 	}
+	if c.Server.BashPath == "" {
+		c.Server.BashPath = "/"
+	}
 	if c.Server.ReadTimeout == 0 {
 		c.Server.ReadTimeout = 10 * time.Second
 	}
@@ -17,6 +20,9 @@ func completeServer(c *Config) {
 	}
 	if c.Server.IdleTimeout == 0 {
 		c.Server.IdleTimeout = 30 * time.Second
+	}
+	if c.Server.SessionExpires == 0 {
+		c.Server.SessionExpires = 24 * time.Hour
 	}
 }
 func completeLog(c *Config) {

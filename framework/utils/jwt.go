@@ -1,9 +1,9 @@
 package utils
 
 import (
+	"encoding/base64"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/hawthorntrees/cronframework/framework/config"
-	"time"
 )
 
 type CustomClaims struct {
@@ -13,20 +13,25 @@ type CustomClaims struct {
 }
 
 func GenerateToken(userID string, username string) (string, error) {
+	key := config.GetTokenKey()
+	decodeString, _ := base64.StdEncoding.DecodeString(key)
+
 	claims := CustomClaims{
 		UserID:   userID,
 		Username: username,
 		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(1 * time.Hour)), // 过期时间
+			ExpiresAt: jwt.NewNumericDate(config.GetExpireTime()), // 过期时间
 		},
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS512, claims)
-	return token.SignedString([]byte(config.GetTokenKey()))
+	return token.SignedString(decodeString)
 }
 
 func ParseToken(tokenString string) (*CustomClaims, error) {
 	token, err := jwt.ParseWithClaims(tokenString, &CustomClaims{}, func(t *jwt.Token) (interface{}, error) {
-		return []byte(config.GetTokenKey()), nil
+		key := config.GetTokenKey()
+		decodeString, _ := base64.StdEncoding.DecodeString(key)
+		return decodeString, nil
 	})
 	if claims, ok := token.Claims.(*CustomClaims); ok && token.Valid {
 		return claims, nil

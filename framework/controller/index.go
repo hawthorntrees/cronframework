@@ -2,7 +2,8 @@ package controller
 
 import "github.com/gin-gonic/gin"
 
-func RegisterRouter(engine *gin.RouterGroup) {
+func RegisterRouter(router *gin.RouterGroup) {
+	engine := router.Group("/sys")
 	engine.POST("/addMenu", AddMenu)
 	engine.POST("/getAllMenus", GetAllMenus)
 	engine.POST("/getRoleMenus", GetRoleMenus)

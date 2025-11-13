@@ -5,6 +5,7 @@ import (
 	"gopkg.in/yaml.v3"
 	"os"
 	"path/filepath"
+	"time"
 )
 
 var (
@@ -47,7 +48,12 @@ func (c *Config) completeDefaults() {
 func GetTokenKey() string {
 	return _config.Server.TokenKey
 }
-
+func GetExpireTime() time.Time {
+	return time.Now().Add(_config.Server.SessionExpires)
+}
+func GetBasePath() string {
+	return _config.Server.BashPath
+}
 func getExecPath(relativeFilePath string) (execPath string, err error) {
 	ep, e := os.Executable()
 	if e != nil {

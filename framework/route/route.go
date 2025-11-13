@@ -2,29 +2,28 @@ package route
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/hawthorntrees/cronframework/framework/config"
 	"github.com/hawthorntrees/cronframework/framework/controller"
-	"github.com/hawthorntrees/cronframework/framework/logger"
-	"go.uber.org/zap"
 )
 
-func Init() *gin.Engine {
-	gin.SetMode(gin.ReleaseMode)
-	router := gin.New()
-	router.Use(gin.Recovery())
-	router.Use(traceMiddleware())
-	router.Use(JwtAuth())
-	group := router.Group("/api")
-	controller.RegisterRouter(group)
-	return router
-}
+var whitelist = make(map[string]struct{})
 
-func GetLogger(ctx *gin.Context) *zap.Logger {
-	id, ok := ctx.Get("id")
-	if ok {
-		traceID, o := id.(string)
-		if o {
-			return logger.GetBaseLogger().With(zap.String("traceID", traceID))
-		}
+func Init(cfg *config.ServerConfig) (*gin.Engine, *gin.RouterGroup) {
+	gin.SetMode(gin.ReleaseMode)
+	initWhitelist()
+	engine := gin.New()
+	engine.Use(gin.Recovery())
+	engine.Use(traceMiddleware())
+	engine.Use(JwtAuth())
+	routerGroup := engine.Group(cfg.BashPath)
+	controller.RegisterRouter(routerGroup)
+	return engine, routerGroup
+}
+func initWhitelist() {
+	basePath := config.GetBasePath()
+	if basePath == "/" {
+		basePath = ""
 	}
-	return logger.GetBaseLogger()
+	login := basePath + "/sys/login"
+	whitelist[login] = struct{}{}
 }

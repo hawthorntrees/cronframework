@@ -23,7 +23,8 @@ import (
 type Framework struct {
 	config      *config.Config
 	taskManager *cron.TaskManager
-	router      *gin.Engine
+	engine      *gin.Engine
+	router      *gin.RouterGroup
 	ctx         context.Context
 	cancel      context.CancelFunc
 	server      *http.Server
@@ -46,13 +47,14 @@ func New(filepath string) (*Framework, error) {
 	taskManager = cron.NewTaskManager(&cfg.CronTask)
 	log.Debug("任务管理器初始化成功")
 
-	router := route.Init()
+	engine, router := route.Init(&cfg.Server)
 	log.Debug("路由初始化成功")
 
 	ctx, cancel := context.WithCancel(context.Background())
 	f := &Framework{
 		config:      cfg,
 		taskManager: taskManager,
+		engine:      engine,
 		router:      router,
 		ctx:         ctx,
 		cancel:      cancel,
@@ -60,7 +62,7 @@ func New(filepath string) (*Framework, error) {
 	}
 	f.server = &http.Server{
 		Addr:         cfg.Server.Address,
-		Handler:      router,
+		Handler:      engine,
 		ReadTimeout:  cfg.Server.ReadTimeout,
 		WriteTimeout: cfg.Server.WriteTimeout,
 		IdleTimeout:  cfg.Server.IdleTimeout,
@@ -75,7 +77,7 @@ func (f *Framework) RegisterTask(fn cron.TaskFunc) error {
 	return f.taskManager.RegisterTask(fn)
 }
 
-func (f *Framework) Router() *gin.Engine {
+func (f *Framework) Router() *gin.RouterGroup {
 	return f.router
 }
 func (f *Framework) Start() error {
