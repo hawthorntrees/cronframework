@@ -41,11 +41,14 @@ type TaskManager struct {
 type cronEntryInfo struct {
 	EntryID  cron.EntryID
 	CronExpr string
-	TaskName string
+	TimeOut  int
 }
+
+var noRecordExecution bool
 
 func NewTaskManager(taskCfg *config.TaskConfig) *TaskManager {
 	initLogger(taskCfg.LogLevel)
+	noRecordExecution = taskCfg.NotRecordTaskExecution
 	lg := taskLogger.With(zap.String("traceID", "task-manager")).Sugar()
 	ctx, cancel := context.WithCancel(context.Background())
 	return &TaskManager{
@@ -122,7 +125,7 @@ func (m *TaskManager) syncTasks() error {
 		keepTaskIDs[task.ID] = true
 
 		if entryInfo, exists := m.taskEntries[task.ID]; exists {
-			if entryInfo.CronExpr == task.CronExpr && entryInfo.TaskName == task.Name {
+			if entryInfo.CronExpr == task.CronExpr && entryInfo.TimeOut == task.Timeout {
 				continue
 			}
 			m.cron.Remove(entryInfo.EntryID)
@@ -141,7 +144,7 @@ func (m *TaskManager) syncTasks() error {
 		m.taskEntries[task.ID] = cronEntryInfo{
 			EntryID:  entryID,
 			CronExpr: task.CronExpr,
-			TaskName: task.Name,
+			TimeOut:  task.Timeout,
 		}
 
 		m.logger.Debugf("添加/更新任务调度[%v-%v-%v]", task.ID, task.Name, task.CronExpr)
@@ -151,7 +154,7 @@ func (m *TaskManager) syncTasks() error {
 		if !keepTaskIDs[taskID] {
 			m.cron.Remove(entryInfo.EntryID)
 			delete(m.taskEntries, taskID)
-			m.logger.Debugf("移除已删除的任务[%v-%v]", taskID, entryInfo.TaskName)
+			m.logger.Debugf("移除已删除的任务[%v]", taskID)
 		}
 	}
 
@@ -180,20 +183,26 @@ var (
 	noFunc         = "任务函数未注册"
 )
 
-func (m *TaskManager) executeTask(task *model.Hawthorn_task) {
-
-	traceID, err := utils.GenerateTraceID()
+func createContext() (traceID string, ctx context.Context, lg *zap.Logger) {
+	id, err := utils.GenerateTraceID()
 	if err != nil {
-		traceID = "traceErr"
+		id = "traceErr"
 	}
-	lg := taskLogger.With(zap.String("traceID", traceID))
-
+	c := context.WithValue(context.Background(), "traceID", id)
+	l := taskLogger.With(zap.String("traceID", id))
+	return id, c, l
+}
+func (m *TaskManager) executeTask(task *model.Hawthorn_task) {
+	traceID, ctx, lg := createContext()
+	nw := time.Now()
+	now := nw.Truncate(time.Millisecond)
+	expiredAt := nw.Add(time.Duration(task.Timeout) * time.Second).Truncate(time.Millisecond)
 	execution := &model.Hawthorn_task_execution{
 		TaskID:      task.ID,
 		NodeID:      m.nodeID,
 		TraceID:     traceID,
-		StartTime:   time.Now(),
-		CreatedDate: time.Now(),
+		StartTime:   now,
+		CreatedDate: now,
 	}
 	var finalErr error
 
@@ -210,14 +219,22 @@ func (m *TaskManager) executeTask(task *model.Hawthorn_task) {
 		} else if execution.Status == "" {
 			return
 		}
-		end := time.Now()
-		execution.EndTime = &end
-		if err := m.repo.CreateExecution(m.ctx, execution); err != nil {
-			panic(fmt.Errorf("登记执行记录失败: %v", err))
+
+		err2 := m.repo.ReleaseLockTask(ctx, task.ID, now, expiredAt, lg)
+		if err2 != nil {
+			execution.Error = execution.Error + "释放锁失败"
+			lg.Sugar().Errorw("释放锁失败：%d,%w", task.ID, err2)
+		}
+		if !noRecordExecution {
+			end := time.Now().Truncate(time.Millisecond)
+			execution.EndTime = &end
+			if err := m.repo.CreateExecution(ctx, execution); err != nil {
+				panic(fmt.Errorf("登记执行记录失败: %v", err))
+			}
 		}
 	}()
 
-	lockErr := m.repo.TryLockTask(m.ctx, task.ID, 2*time.Second)
+	lockErr := m.repo.TryLockTask(ctx, task.ID, now, expiredAt)
 	if lockErr != nil {
 		if errors.Is(lockErr, gorm.ErrRecordNotFound) {
 			return
@@ -227,8 +244,6 @@ func (m *TaskManager) executeTask(task *model.Hawthorn_task) {
 		lg.Sugar().Errorw("任务%d-%s抢占失败:%w", task.ID, task.Name, lockErr)
 		return
 	}
-
-	ctx := context.WithValue(context.Background(), "traceID", traceID)
 	m.mu.RLock()
 	taskFunc, exists := m.taskFuncs[task.Name]
 	m.mu.RUnlock()

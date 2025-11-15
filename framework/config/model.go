@@ -15,7 +15,7 @@ type AppConfig struct {
 	Center string `yaml:"center,omitempty"`
 	Group  string `yaml:"group,omitempty"`
 	Id     string `yaml:"id,omitempty"`
-	WorkID int64  `yaml:"workID,omitempty"`
+	WorkID uint16 `yaml:"workID,omitempty"`
 }
 
 type ServerConfig struct {
@@ -30,9 +30,10 @@ type ServerConfig struct {
 }
 
 type TaskConfig struct {
-	NodeID           string        `yaml:"node_id,omitempty"`
-	LogLevel         string        `yaml:"log_level,omitempty"`
-	TaskSyncInterval time.Duration `yaml:"task_sync_interval,omitempty"`
+	NodeID                 string        `yaml:"node_id,omitempty"`
+	LogLevel               string        `yaml:"log_level,omitempty"`
+	TaskSyncInterval       time.Duration `yaml:"task_sync_interval,omitempty"`
+	NotRecordTaskExecution bool          `yaml:"not_record_task_execution"`
 }
 
 type LoggerConfig struct {

@@ -120,7 +120,7 @@ func (l *loggerAdapter) Trace(ctx context.Context, begin time.Time, fc func() (s
 			zap.Int64("rowsAffected", rows),
 			zap.Duration("elapsed", elapsed),
 			zap.Error(err))
-	} else if traceID != nil {
+	} else {
 		log.Info("SQL执行",
 			zap.String("sql", sql),
 			zap.Int64("rowsAffected", rows),

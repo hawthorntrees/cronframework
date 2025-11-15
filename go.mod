@@ -8,6 +8,7 @@ require (
 	github.com/golang-jwt/jwt/v5 v5.2.2
 	github.com/jackc/pgx/v5 v5.6.0
 	github.com/robfig/cron/v3 v3.0.1
+	github.com/sony/sonyflake v1.3.0
 	github.com/tjfoc/gmsm v1.4.1
 	go.uber.org/zap v1.27.0
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1
