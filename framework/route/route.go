@@ -13,8 +13,9 @@ func Init(cfg *config.ServerConfig) (*gin.Engine, *gin.RouterGroup) {
 	initWhitelist()
 	engine := gin.New()
 	engine.Use(gin.Recovery())
+	engine.Use(RecoveryMiddleware())
 	engine.Use(traceMiddleware())
-	engine.Use(JwtAuth())
+	//engine.Use(JwtAuth())
 	routerGroup := engine.Group(cfg.BashPath)
 	controller.RegisterRouter(routerGroup)
 	return engine, routerGroup

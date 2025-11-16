@@ -1,9 +1,12 @@
 package route
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/hawthorntrees/cronframework/framework/dto/resp"
+	"github.com/hawthorntrees/cronframework/framework/logger"
 	"github.com/hawthorntrees/cronframework/framework/utils"
+	"runtime/debug"
 	"strings"
 )
 
@@ -42,6 +45,26 @@ func traceMiddleware() gin.HandlerFunc {
 			id = "error"
 		}
 		c.Set("traceID", id)
+		c.Next()
+	}
+}
+func RecoveryMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		defer func() {
+			if err := recover(); err != nil {
+				stack := debug.Stack()
+				log := logger.GetLogger(c)
+				log.Sugar().Errorf(
+					"[PANIC] 请求路径：%s | 方法：%s | 错误：%v | 堆栈：%s",
+					c.Request.URL.Path,
+					c.Request.Method,
+					err,
+					string(stack),
+				)
+				resp.Error(c, fmt.Sprintf("%v", err))
+				c.Abort()
+			}
+		}()
 		c.Next()
 	}
 }

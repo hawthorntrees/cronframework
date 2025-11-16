@@ -13,5 +13,5 @@ func GetLogger(ctx *gin.Context) *zap.Logger {
 			return GetBaseLogger().With(zap.String("traceID", traceID))
 		}
 	}
-	return GetBaseLogger()
+	return GetBaseLogger().WithOptions(zap.AddCallerSkip(2))
 }

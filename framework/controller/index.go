@@ -10,4 +10,6 @@ func RegisterRouter(router *gin.RouterGroup) {
 	engine.POST("/getMenus", GetMenus)
 	engine.POST("/login", Login)
 	engine.POST("/getRoles", GetRoles)
+	engine.POST("/exportRoles", ExportRoles)
+	engine.GET("/exportRoles", ExportRoles)
 }
