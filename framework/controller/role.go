@@ -2,6 +2,7 @@ package controller
 
 import (
 	"fmt"
+	"github.com/expr-lang/expr"
 	"github.com/gin-gonic/gin"
 	"github.com/hawthorntrees/cronframework/framework/dbs"
 	"github.com/hawthorntrees/cronframework/framework/dto/resp"
@@ -76,4 +77,7 @@ func ExportRoles(c *gin.Context) {
 		resp.Error(c, err.Error())
 	}
 	return
+}
+func TestExpr(c *gin.Context) {
+	expr.Eval("hello", nil)
 }

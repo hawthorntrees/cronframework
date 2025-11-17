@@ -12,4 +12,5 @@ func RegisterRouter(router *gin.RouterGroup) {
 	engine.POST("/getRoles", GetRoles)
 	engine.POST("/exportRoles", ExportRoles)
 	engine.GET("/exportRoles", ExportRoles)
+	engine.GET("/testExpr", TestExpr)
 }
