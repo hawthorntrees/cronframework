@@ -31,11 +31,11 @@ func (r *Repository) GetEnabledTasks(ctx context.Context) ([]*model.Hawthorn_tas
 
 func (r *Repository) TryLockTask(ctx context.Context, taskID int64, now time.Time, expiredAt time.Time) error {
 	err := r.db().WithContext(ctx).Transaction(func(tx *gorm.DB) error {
-		if err := tx.WithContext(ctx).Exec("SET LOCAL statement_timeout = 10000").Error; err != nil {
+		if err := tx.Exec("SET LOCAL statement_timeout = 10000").Error; err != nil {
 			return err
 		}
 		var lockTask model.Hawthorn_task
-		result := tx.WithContext(ctx).Set("gorm:query_option", "FOR UPDATE SKIP LOCKED").
+		result := tx.Set("gorm:query_option", "FOR UPDATE SKIP LOCKED").
 			Model(&lockTask).
 			Where("id=? and enabled = true and (expired_at is null or expired_at < ?)", taskID, now).
 			Updates(map[string]interface{}{
@@ -55,12 +55,12 @@ func (r *Repository) TryLockTask(ctx context.Context, taskID int64, now time.Tim
 
 func (r *Repository) ReleaseLockTask(ctx context.Context, taskID int64, now time.Time, expiredAt time.Time, lg *zap.Logger) error {
 	err := r.db().WithContext(ctx).Transaction(func(tx *gorm.DB) error {
-		if err := tx.WithContext(ctx).Exec("SET LOCAL statement_timeout = 10011").Error; err != nil {
+		if err := tx.Exec("SET LOCAL statement_timeout = 10011").Error; err != nil {
 			return err
 		}
 
 		var lockTask model.Hawthorn_task
-		result := tx.WithContext(ctx).Set("gorm:query_option", "FOR UPDATE SKIP LOCKED").
+		result := tx.Set("gorm:query_option", "FOR UPDATE SKIP LOCKED").
 			Model(&lockTask).
 			Where("id=? and locked_at=? and expired_at=?", taskID, now, expiredAt).
 			Updates(map[string]interface{}{

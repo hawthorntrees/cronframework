@@ -52,7 +52,7 @@ func GetExpireTime() time.Time {
 	return time.Now().Add(_config.Server.SessionExpires)
 }
 func GetBasePath() string {
-	return _config.Server.BashPath
+	return _config.Server.BasePath
 }
 func getExecPath(relativeFilePath string) (execPath string, err error) {
 	ep, e := os.Executable()

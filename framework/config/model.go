@@ -19,7 +19,7 @@ type AppConfig struct {
 }
 
 type ServerConfig struct {
-	BashPath       string        `yaml:"bash_path,omitempty"`
+	BasePath       string        `yaml:"base_path,omitempty"`
 	Address        string        `yaml:"address,omitempty"`
 	ReadTimeout    time.Duration `yaml:"read_timeout,omitempty"`
 	WriteTimeout   time.Duration `yaml:"write_timeout,omitempty"`

@@ -121,6 +121,9 @@ func (l *loggerAdapter) Trace(ctx context.Context, begin time.Time, fc func() (s
 			zap.Duration("elapsed", elapsed),
 			zap.Error(err))
 	} else {
+		if !l.level.Enabled(zapcore.InfoLevel) {
+			return
+		}
 		log.Info("SQL执行",
 			zap.String("sql", sql),
 			zap.Int64("rowsAffected", rows),
