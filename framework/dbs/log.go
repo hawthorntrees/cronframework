@@ -42,7 +42,7 @@ func initLogger(lel string) {
 	lg := zap.New(core,
 		zap.AddCaller(),
 		zap.IncreaseLevel(level),
-		zap.AddCallerSkip(1),
+		zap.AddCallerSkip(2),
 	)
 	zaplog = &loggerAdapter{logger: lg, level: level}
 }
@@ -59,14 +59,7 @@ func (l *loggerAdapter) Info(ctx context.Context, s string, i ...interface{}) {
 		return
 	}
 	f := toZapFields(i...)
-	traceID := ctx.Value("traceID")
-	log := l.logger
-	if traceID != nil {
-		id, ok := traceID.(string)
-		if ok {
-			log = l.logger.With(zap.String("traceID", id))
-		}
-	}
+	log := getLog(ctx, l.logger)
 	log.Info(s, f...)
 }
 
@@ -75,14 +68,7 @@ func (l *loggerAdapter) Warn(ctx context.Context, s string, i ...interface{}) {
 		return
 	}
 	f := toZapFields(i...)
-	traceID := ctx.Value("traceID")
-	log := l.logger
-	if traceID != nil {
-		id, ok := traceID.(string)
-		if ok {
-			log = l.logger.With(zap.String("traceID", id))
-		}
-	}
+	log := getLog(ctx, l.logger)
 	log.Warn(s, f...)
 }
 
@@ -91,29 +77,14 @@ func (l *loggerAdapter) Error(ctx context.Context, s string, i ...interface{}) {
 		return
 	}
 	f := toZapFields(i...)
-	traceID := ctx.Value("traceID")
-	log := l.logger
-	if traceID != nil {
-		id, ok := traceID.(string)
-		if ok {
-			log = l.logger.With(zap.String("traceID", id))
-		}
-	}
+	log := getLog(ctx, l.logger)
 	log.Error(s, f...)
 }
 
 func (l *loggerAdapter) Trace(ctx context.Context, begin time.Time, fc func() (sql string, rowsAffected int64), err error) {
-	traceID := ctx.Value("traceID")
-	log := l.logger
-	if traceID != nil {
-		id, ok := traceID.(string)
-		if ok {
-			log = l.logger.With(zap.String("traceID", id))
-		}
-	}
+	log := getLog(ctx, l.logger)
 	sql, rows := fc()
 	elapsed := time.Since(begin)
-
 	if err != nil {
 		log.Error("SQL执行错误",
 			zap.String("sql", sql),
@@ -146,4 +117,14 @@ func toZapFields(args ...interface{}) []zap.Field {
 		i++
 	}
 	return fields
+}
+func getLog(ctx context.Context, lg *zap.Logger) *zap.Logger {
+	traceID := ctx.Value("traceID")
+	if traceID != nil {
+		id, ok := traceID.(string)
+		if ok {
+			return lg.With(zap.String("traceID", id))
+		}
+	}
+	return lg.With(zap.String("traceID", "errorID"))
 }

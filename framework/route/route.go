@@ -15,7 +15,7 @@ func Init(cfg *config.ServerConfig) (*gin.Engine, *gin.RouterGroup) {
 	engine.Use(gin.Recovery())
 	engine.Use(RecoveryMiddleware())
 	engine.Use(traceMiddleware())
-	engine.Use(JwtAuth())
+	//engine.Use(JwtAuth())
 	routerGroup := engine.Group(cfg.BasePath)
 	controller.RegisterRouter(routerGroup)
 	return engine, routerGroup

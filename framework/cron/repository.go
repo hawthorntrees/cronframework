@@ -7,6 +7,7 @@ import (
 	"github.com/hawthorntrees/cronframework/framework/model"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 	"time"
 )
 
@@ -22,7 +23,7 @@ func NewRepository() *Repository {
 
 func (r *Repository) GetEnabledTasks(ctx context.Context) ([]*model.Hawthorn_task, error) {
 	var tasks []*model.Hawthorn_task
-	result := r.db().WithContext(ctx).Where("enabled = ?", true).Find(&tasks)
+	result := r.db().Session(&gorm.Session{Logger: logger.Discard}).WithContext(ctx).Where("enabled = ?", true).Find(&tasks)
 	if result.Error != nil {
 		return nil, fmt.Errorf("查询任务失败: %w", result.Error)
 	}
@@ -30,7 +31,7 @@ func (r *Repository) GetEnabledTasks(ctx context.Context) ([]*model.Hawthorn_tas
 }
 
 func (r *Repository) TryLockTask(ctx context.Context, taskID int64, now time.Time, expiredAt time.Time) error {
-	err := r.db().WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+	err := r.db().Session(&gorm.Session{Logger: logger.Discard}).WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		if err := tx.Exec("SET LOCAL statement_timeout = 10000").Error; err != nil {
 			return err
 		}
@@ -54,8 +55,8 @@ func (r *Repository) TryLockTask(ctx context.Context, taskID int64, now time.Tim
 }
 
 func (r *Repository) ReleaseLockTask(ctx context.Context, taskID int64, now time.Time, expiredAt time.Time, lg *zap.Logger) error {
-	err := r.db().WithContext(ctx).Transaction(func(tx *gorm.DB) error {
-		if err := tx.Exec("SET LOCAL statement_timeout = 10011").Error; err != nil {
+	err := r.db().Session(&gorm.Session{Logger: logger.Discard}).WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		if err := tx.Exec("SET LOCAL statement_timeout = 10000").Error; err != nil {
 			return err
 		}
 
@@ -73,7 +74,7 @@ func (r *Repository) ReleaseLockTask(ctx context.Context, taskID int64, now time
 }
 
 func (r *Repository) CreateExecution(ctx context.Context, execution *model.Hawthorn_task_execution) error {
-	result := r.db().WithContext(ctx).Create(execution)
+	result := r.db().Session(&gorm.Session{Logger: logger.Discard}).WithContext(ctx).Create(execution)
 	if result.Error != nil {
 		return result.Error
 	}

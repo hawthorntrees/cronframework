@@ -12,12 +12,13 @@ import (
 )
 
 var loggerCore zapcore.Core
-var baseLogger *zap.Logger
+var defaultLogger *zap.Logger
+var serverLogger *zap.Logger
 
 func Init(cfg *config.LoggerConfig) *zap.Logger {
 	initCore(cfg)
-	createLogger(cfg.Level)
-	return baseLogger
+	createDefaultLogger(cfg.Level)
+	return defaultLogger
 }
 
 func customTimeEncoder(t time.Time, enc zapcore.PrimitiveArrayEncoder) {
@@ -68,7 +69,7 @@ func initCore(cfg *config.LoggerConfig) {
 	)
 }
 
-func createLogger(level string) {
+func createDefaultLogger(level string) {
 	lv := zap.NewAtomicLevel()
 	switch level {
 	case "debug":
@@ -83,10 +84,9 @@ func createLogger(level string) {
 		lv.SetLevel(zapcore.InvalidLevel)
 
 	}
-	baseLogger = zap.New(loggerCore,
+	defaultLogger = zap.New(loggerCore,
 		zap.AddCaller(),
 		zap.IncreaseLevel(lv),
-		zap.AddCallerSkip(1),
 		zap.AddStacktrace(zapcore.ErrorLevel),
 	)
 }
@@ -94,6 +94,6 @@ func GetLoggerCore() zapcore.Core {
 	return loggerCore
 }
 
-func GetBaseLogger() *zap.Logger {
-	return baseLogger
+func GetDefaultLogger() *zap.Logger {
+	return defaultLogger
 }

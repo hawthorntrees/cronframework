@@ -12,6 +12,8 @@ import (
 	"github.com/hawthorntrees/cronframework/framework/route"
 	"github.com/hawthorntrees/cronframework/framework/utils"
 	"go.uber.org/zap"
+	"gorm.io/gorm"
+	logger2 "gorm.io/gorm/logger"
 	"net/http"
 	"os"
 	"os/signal"
@@ -95,9 +97,9 @@ func (f *Framework) Start() error {
 
 	go func() {
 		defer f.wg.Done()
-		f.log.Info("HTTP服务启动")
+		f.log.Info("服务启动成功")
 		if err := f.server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-			f.log.Error("HTTP服务异常退出", zap.Error(err))
+			f.log.Error("服务异常退出", zap.Error(err))
 		}
 	}()
 	f.wg.Add(1)
@@ -131,9 +133,9 @@ func (f *Framework) gracefulShutdown() {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	if err := f.server.Shutdown(ctx); err != nil {
-		f.log.Warn("HTTP服务关闭超时:" + err.Error())
+		f.log.Warn("服务关闭超时:" + err.Error())
 	} else {
-		f.log.Info("已关闭HTTP服务")
+		f.log.Info("已停止服务")
 	}
 
 	dbs.CloseDBS()
@@ -141,7 +143,7 @@ func (f *Framework) gracefulShutdown() {
 
 func (f *Framework) AutoMigrate() error {
 	db := dbs.GetDB()
-	err := db.AutoMigrate(&model.Hawthorn_task{}, &model.Hawthorn_task_execution{})
+	err := db.Session(&gorm.Session{Logger: logger2.Discard}).AutoMigrate(&model.Hawthorn_task{}, &model.Hawthorn_task_execution{})
 	if err != nil {
 		f.log.Warn("数据迁移失败")
 		return err
