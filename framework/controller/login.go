@@ -6,37 +6,45 @@ import (
 	"github.com/hawthorntrees/cronframework/framework/dbs"
 	"github.com/hawthorntrees/cronframework/framework/dto/login"
 	"github.com/hawthorntrees/cronframework/framework/dto/resp"
+	"github.com/hawthorntrees/cronframework/framework/logger"
 	"github.com/hawthorntrees/cronframework/framework/model"
 	"github.com/hawthorntrees/cronframework/framework/utils"
 	"gorm.io/gorm"
 	"strconv"
 )
 
-func Login(ctx *gin.Context) {
+func Login(c *gin.Context) {
 	loginInfo := struct {
 		Name     string `json:"name"`
 		Password string `json:"password"`
 	}{}
-	ctx.ShouldBindJSON(&loginInfo)
+	ctx := logger.GetContextFromGin(c)
+	log := logger.GetLogger(c)
+	bindErr := c.ShouldBindJSON(&loginInfo)
+	if bindErr != nil {
+		log.Sugar().Errorf("登录失败%v", bindErr)
+		resp.Error(c, bindErr.Error())
+		return
+	}
 	user := model.Hawthorn_sys_user{}
 	db := dbs.GetDB()
 
-	result := db.Session(&gorm.Session{}).First(&user, "user_id=?", loginInfo.Name)
+	result := db.WithContext(ctx).First(&user, "user_id=?", loginInfo.Name)
 	if result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
-			resp.Error(ctx, "用户不存在")
+			resp.Error(c, "用户不存在")
 			return
 		} else {
-			resp.Error(ctx, result.Error.Error())
+			resp.Error(c, result.Error.Error())
 			return
 		}
 	}
 	//2. 验证密码
 	token, err := utils.GenerateToken(loginInfo.Name, loginInfo.Password)
 	if err != nil {
-		ctx.JSON(200, err)
+		c.JSON(200, err)
 	} else {
-		resp.Success(ctx, resp.RespJson{"token": token})
+		resp.Success(c, resp.RespJson{"token": token})
 	}
 }
 

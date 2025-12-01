@@ -11,6 +11,7 @@ import (
 	"go.uber.org/zap"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"gorm.io/gorm/schema"
 	"time"
 )
 
@@ -106,6 +107,9 @@ func initDBConnection(instance *config.DBInstanceConfig) (*gorm.DB, error) {
 	}), &gorm.Config{
 		PrepareStmt: true,
 		Logger:      zaplog,
+		NamingStrategy: schema.NamingStrategy{
+			SingularTable: true,
+		},
 	})
 	return db, nil
 }

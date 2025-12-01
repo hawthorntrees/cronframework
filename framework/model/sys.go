@@ -1,5 +1,7 @@
 package model
 
+import "time"
+
 type Hawthorn_sys_menu struct {
 	Menu_id      int                  `gorm:"type:int;comment:'菜单编号';primaryKey" json:"menu_id"`
 	Menu_name    string               `gorm:"type:varchar(50);comment:'菜单名称'" json:"menu_name"`
@@ -40,7 +42,19 @@ type Hawthorn_sys_role struct {
 }
 
 type Hawthorn_sys_user struct {
-	User_id       string `gorm:"type:varchar(20);comment:'用户编号';primaryKey" json:"user_id"`
-	User_name     string `gorm:"type:varchar(50);comment:'用户名称'" json:"user_name"`
-	User_password string `gorm:"type:varchar(50);comment:'用户密码'" json:"user_password"`
+	User_id       string    `gorm:"type:varchar(20);column:user_id;comment:'用户编号';primaryKey;not null" json:"user_id"`
+	User_name     string    `gorm:"type:varchar(50);comment:'用户名称';not null" json:"user_name"`
+	Nick_name     string    `gorm:"type:varchar(50);comment:'用户昵称'" json:"nick_name"`
+	User_password string    `gorm:"type:varchar(100);comment:'用户密码'" json:"user_password"`
+	Dept_id       string    `gorm:"type:varchar(10);comment:'部门编号'" json:"dept_id"`
+	User_type     string    `gorm:"type:varchar(2);comment:'用户类型(0-系统用户)'" json:"user_type"`
+	Email         string    `gorm:"type:varchar(50);comment:'邮箱'" json:"email"`
+	Phone         string    `gorm:"type:varchar(11);comment:'手机号码'" json:"phone"`
+	Sex           string    `gorm:"type:varchar(2);comment:'性别：0-女 1-男'" json:"sex"`
+	Status        string    `gorm:"type:varchar(4);comment:'账户状态'" json:"status"`
+	Create_by     string    `gorm:"type:varchar(20);comment:'创建者'" json:"create_by"`
+	Create_time   time.Time `gorm:"type:varchar(50);comment:'创建时间'" json:"create_time"`
+	Update_by     string    `gorm:"type:varchar(20);comment:'更新者'" json:"update_by"`
+	Update_time   time.Time `gorm:"type:timestamp(3);comment:'更新时间'" json:"update_time"`
+	Remark        string    `gorm:"type:varchar(100);comment:'备注'" json:"remark"`
 }
